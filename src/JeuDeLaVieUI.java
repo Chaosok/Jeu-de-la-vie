@@ -53,13 +53,22 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         panneauControle.add(sliderVitesse);
 
         // --- COMBOBOX RÈGLES ---
-        String[] regles = {"Classique", "HighLife"};
+        String[] regles = {"Classique (Conway)", "HighLife", "Day & Night"};
         JComboBox<String> comboRegles = new JComboBox<>(regles);
         comboRegles.addActionListener(e -> {
-            if (comboRegles.getSelectedIndex() == 0) {
+            int choix = comboRegles.getSelectedIndex();
+            
+            if (choix == 0) {
+                // Règle 0 : Le classique de John Conway
                 jeu.setVisiteur(new VisiteurClassique(jeu));
-            } else {
-                jeu.setVisiteur(new VisiteurHighLife(jeu)); // Assure-toi d'avoir créé cette classe !
+                
+            } else if (choix == 1) {
+                // Règle 1 : HighLife
+                jeu.setVisiteur(new VisiteurHighLife(jeu)); // (Si tu l'as créé !)
+                
+            } else if (choix == 2) {
+                // Règle 2 : Day & Night
+                jeu.setVisiteur(new VisiteurDayNight(jeu));
             }
         });
         panneauControle.add(comboRegles);
@@ -84,39 +93,7 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         // Quand le jeu notifie un changement, on demande à redessiner la fenêtre
         this.repaint();
     }
-
-    // classe interne pour desinner la grille
-    /*@Override
-    public void paint(Graphics g) {
-        super.paint(g);
-        
-        // On récupère les bordures pour décaler le dessin dynamiquement
-        Insets insets = this.getInsets();
-        int offsetX = insets.left; // Décalage à gauche
-        int offsetY = insets.top;  // Décalage en haut 
-
-        for (int x = 0; x < jeu.getXMax(); x++) {
-            for (int y = 0; y < jeu.getYMax(); y++) {
-                
-                Cellule c = jeu.getGrilleXY(x, y);
-                
-                if (c != null && c.estVivante()) {
-                    g.setColor(Color.BLACK);
-                } else {
-                    g.setColor(Color.WHITE);
-                }
-                
-                // On dessine en ajoutant les décalages X et Y
-                int positionX = offsetX + (x * TAILLE_CELLULE);
-                int positionY = offsetY + (y * TAILLE_CELLULE);
-                
-                g.fillRect(positionX, positionY, TAILLE_CELLULE, TAILLE_CELLULE);
-                
-                g.setColor(Color.LIGHT_GRAY);
-                g.drawRect(positionX, positionY, TAILLE_CELLULE, TAILLE_CELLULE);
-            }
-        }
-    }*/
+    
    @Override
     public void paint(Graphics g) {
         // DOUBLE BUFFERING : On crée une image "invisible" de la taille de la fenêtre

@@ -114,5 +114,6 @@ public class JeuDeLaVie extends Observable{
         // On enregistre l'interface comme observateur du jeu
         jeu.attacheObservateur(ui);
         jeu.attacheObservateur(console);
+        jeu.notifieObservateurs();
     }
 }

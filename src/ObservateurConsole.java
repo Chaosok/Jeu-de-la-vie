@@ -17,7 +17,7 @@ public class ObservateurConsole implements Observateur{
         for (int i=0; i<jeu.getXMax(); i++){
             for(int j=0; j<jeu.getYMax(); j++){
                 Cellule c = jeu.getGrilleXY(i, j);
-                if (c.estVivante() && c != null){
+                if (c != null && c.estVivante()){
                     vivantes++;
                 }
             }
