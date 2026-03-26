@@ -5,7 +5,7 @@ import java.awt.*;
 public class JeuDeLaVieUI extends JFrame implements Observateur {
     
     private JeuDeLaVie jeu;
-    private static final int TAILLE_CELLULE = 10;
+    private int tailleCellule = 10;
 
     public JeuDeLaVieUI(JeuDeLaVie jeu) {
         this.jeu = jeu;
@@ -46,11 +46,64 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         btnReinit.addActionListener(e -> jeu.reinitialiserGrille(0.5));
         panneauControle.add(btnReinit);
 
+        // --- BOUTON Zoom ---
+        JButton btnZoomPlus = new JButton("Zoom +");
+        btnZoomPlus.addActionListener(e -> {
+            tailleCellule += 2; // Augmente la taille de 2 pixels
+            actualise(); // Redessine
+        });
+
+        JButton btnZoomMoins = new JButton("Zoom -");
+        btnZoomMoins.addActionListener(e -> {
+            if (tailleCellule > 2) { // Empêche d'avoir une taille négative ou nulle
+                tailleCellule -= 2;
+                actualise();
+            }
+        });
+        
+        panneauControle.add(btnZoomMoins);
+        panneauControle.add(btnZoomPlus);
+
+        // --- config de départ ---
+        JButton btnPlaneur = new JButton("Générer Planeur");
+        btnPlaneur.addActionListener(e -> jeu.chargerPlaneur());
+        panneauControle.add(btnPlaneur);
+
+        // --- taille de grille ---
+        JButton btnTaille = new JButton("Grille 100x100");
+        btnTaille.addActionListener(e -> {
+            jeu.redimensionner(100, 100);
+            
+            // Il faut recalculer la taille de la fenêtre !
+            Insets insets = getInsets();
+            int larg = (jeu.getXMax() * tailleCellule) + insets.left + insets.right;
+            int haut = (jeu.getYMax() * tailleCellule) + insets.top + insets.bottom + 60; 
+            setSize(larg, haut);
+            
+            actualise();
+        });
+        panneauControle.add(btnTaille);
+
         // --- SLIDER DE VITESSE ---
         JSlider sliderVitesse = new JSlider(50, 1000, 500);
         sliderVitesse.addChangeListener(e -> timer.setDelay(sliderVitesse.getValue()));
         panneauControle.add(new JLabel("Vitesse:"));
         panneauControle.add(sliderVitesse);
+
+        // --- CONTRÔLE DE DENSITÉ ---
+        // Curseur de 0 à 100, départ à 50
+        JSlider sliderDensite = new JSlider(0, 100, 50); 
+        
+        JButton btnReset = new JButton("Reset Aléatoire");
+        btnReset.addActionListener(e -> {
+            // On divise par 100 pour transformer "50" en "0.5"
+            double densite = sliderDensite.getValue() / 100.0; 
+            jeu.reinitialiserGrille(densite);
+        });
+
+        panneauControle.add(new JLabel("Densité:"));
+        panneauControle.add(sliderDensite);
+        panneauControle.add(btnReset);
 
         // --- COMBOBOX RÈGLES ---
         String[] regles = {"Classique (Conway)", "HighLife", "Day & Night"};
@@ -79,10 +132,10 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         // 5. Calcul de la taille de la fenêtre
         this.setVisible(true); 
         Insets insets = this.getInsets();
-        int largeurTotale = (jeu.getXMax() * TAILLE_CELLULE) + insets.left + insets.right;
+        int largeurTotale = (jeu.getXMax() * tailleCellule) + insets.left + insets.right;
         
         // ATTENTION : On ajoute ~40 pixels en plus en hauteur pour avoir la place d'afficher le panneau de contrôle !
-        int hauteurTotale = (jeu.getYMax() * TAILLE_CELLULE) + insets.top + insets.bottom + 40; 
+        int hauteurTotale = (jeu.getYMax() * tailleCellule) + insets.top + insets.bottom + 40; 
         
         this.setSize(largeurTotale, hauteurTotale);
         this.setLocationRelativeTo(null);
@@ -93,7 +146,7 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         // Quand le jeu notifie un changement, on demande à redessiner la fenêtre
         this.repaint();
     }
-    
+
    @Override
     public void paint(Graphics g) {
         // DOUBLE BUFFERING : On crée une image "invisible" de la taille de la fenêtre
@@ -126,14 +179,14 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
                     pinceauCache.setColor(Color.WHITE);
                 }
                 
-                int positionX = offsetX + (x * TAILLE_CELLULE);
-                int positionY = offsetY + (y * TAILLE_CELLULE);
+                int positionX = offsetX + (x * tailleCellule);
+                int positionY = offsetY + (y * tailleCellule);
                 
                 // On colorie sur la toile cachée
-                pinceauCache.fillRect(positionX, positionY, TAILLE_CELLULE, TAILLE_CELLULE);
+                pinceauCache.fillRect(positionX, positionY, tailleCellule, tailleCellule);
                 
                 pinceauCache.setColor(Color.LIGHT_GRAY);
-                pinceauCache.drawRect(positionX, positionY, TAILLE_CELLULE, TAILLE_CELLULE);
+                pinceauCache.drawRect(positionX, positionY, tailleCellule, tailleCellule);
             }
         }
         

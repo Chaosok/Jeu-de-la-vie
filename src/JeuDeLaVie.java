@@ -22,34 +22,28 @@ public class JeuDeLaVie extends Observable{
     }
 
     // Méthode demandée par l'énoncé pour peupler le tableau
+    // L'ancienne méthode appelle maintenant la nouvelle avec 50% par défaut
     private void initialiseGrille() {
-        for (int x = 0; x < xMax; x++) {
-            for (int y = 0; y < yMax; y++) {
-                // On crée une cellule morte par défaut.
-                Cellule c = new Cellule(x, y, CelluleEtatMort.getInstance());
-                
-                // Math.random() donne un chiffre entre 0.0 et 1.0. 
-                // Si c'est supérieur à 0.5, on la fait naître (50% de chances).
-                if (Math.random() > 0.5) {
-                    c.vit();
-                }
-                
-                grille[x][y] = c; // On range la cellule dans la case
-            }
-        }
+        reinitialiserGrille(0.5); 
     }
-    
-    public void reinitialiserGrille(double probabiliteVie) {
+
+    // NOUVELLE MÉTHODE : Permet de choisir la densité (de 0.0 à 1.0)
+    public void reinitialiserGrille(double densite) {
         for (int x = 0; x < xMax; x++) {
             for (int y = 0; y < yMax; y++) {
+                
                 Cellule c = new Cellule(x, y, CelluleEtatMort.getInstance());
-                if (Math.random() < probabiliteVie) { // ex: 0.3 pour 30% de vivantes
+                
+                // Si le hasard fait moins que la densité demandée, la cellule naît
+                if (Math.random() < densite) { 
                     c.vit();
                 }
+                
                 grille[x][y] = c;
             }
         }
-        notifieObservateurs(); // Met à jour l'écran instantanément
+        // Très important : on prévient la fenêtre qu'il faut tout redessiner !
+        notifieObservateurs(); 
     }
 
     // Méthode pour récupérer une cellule
@@ -99,6 +93,35 @@ public class JeuDeLaVie extends Observable{
 
     public void setVisiteur(Visiteur v) {
         this.visiteur = v;
+    }
+
+    public void viderGrille() {
+        // Remet toutes les cellules à l'état "Mort"
+        for (int x = 0; x < xMax; x++) {
+            for (int y = 0; y < yMax; y++) {
+                grille[x][y] = new Cellule(x, y, CelluleEtatMort.getInstance());
+            }
+        }
+    }
+
+    public void chargerPlaneur() {
+        viderGrille(); // On nettoie d'abord
+        
+        // On dessine le planeur en haut à gauche
+        grille[1][0].vit();
+        grille[2][1].vit();
+        grille[0][2].vit();
+        grille[1][2].vit();
+        grille[2][2].vit();
+        
+        notifieObservateurs();
+    }
+
+    public void redimensionner(int nouveauX, int nouveauY) {
+        this.xMax = nouveauX;
+        this.yMax = nouveauY;
+        this.grille = new Cellule[xMax][yMax]; // On recrée un tableau vide
+        reinitialiserGrille(0.3); // On le remplit
     }
 
     public static void main(String[] args) {
