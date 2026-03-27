@@ -78,9 +78,26 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         });
         ligne1.add(btnReset);
 
-        JButton btnPlaneur = new JButton("Planeur");
-        btnPlaneur.addActionListener(e -> {jeu.chargerPlaneur(); generation = 0;});
-        ligne1.add(btnPlaneur);
+        // NOUVEAU : REMPLACE PAR LE MENU DÉROULANT DES STRUCTURES
+        ligne1.add(new JLabel("Structures :"));
+        String[] structures = {"Normale", "Planeur", "Clignotant", "Vaisseau Léger", "Canon à Planeurs"};
+        JComboBox<String> comboStructures = new JComboBox<>(structures);
+        comboStructures.addActionListener(e -> {
+            int choix = comboStructures.getSelectedIndex();
+            
+            if (choix == 0) jeu.reinitialiserGrille(0.3);
+            else if (choix == 1) jeu.chargerPlaneur();
+            else if (choix == 2) jeu.chargerClignotant();
+            else if (choix == 3) jeu.chargerVaisseauLeger();
+            else if (choix == 4) jeu.chargerCanonAPlaneurs();
+
+            // Si on a choisi une structure, on remet le compteur de génération à 0
+            if (choix != 0) {
+                generation = 0; 
+                actualise(); 
+            }
+        });
+        ligne1.add(comboStructures);
 
         JButton btnZoomMoins = new JButton("🔍 -");
         btnZoomMoins.addActionListener(e -> {
@@ -174,7 +191,7 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         /*panneauControle.add(ligne2);
         this.add(panneauControle, BorderLayout.SOUTH);*/
 
-        this.setSize(900, 700);
+        this.setSize(1000, 700);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
     }

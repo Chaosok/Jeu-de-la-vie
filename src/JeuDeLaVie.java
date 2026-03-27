@@ -95,8 +95,8 @@ public class JeuDeLaVie extends Observable{
         this.visiteur = v;
     }
 
+    // Remet toutes les cellules de la grille à l'état "Mort"
     public void viderGrille() {
-        // Remet toutes les cellules à l'état "Mort"
         for (int x = 0; x < xMax; x++) {
             for (int y = 0; y < yMax; y++) {
                 grille[x][y] = new Cellule(x, y, CelluleEtatMort.getInstance());
@@ -104,16 +104,54 @@ public class JeuDeLaVie extends Observable{
         }
     }
 
+    // LE PLANEUR (Glider) : Se déplace en diagonale infiniment
     public void chargerPlaneur() {
-        viderGrille(); // On nettoie d'abord
+        viderGrille();
+        grille[1][0].vit(); grille[2][1].vit();
+        grille[0][2].vit(); grille[1][2].vit(); grille[2][2].vit();
+        notifieObservateurs();
+    }
+
+    // LE CLIGNOTANT (Blinker) : Un oscillateur basique (période 2)
+    public void chargerClignotant() {
+        viderGrille();
+        // On le place un peu au centre (ex: coordonnées 10,10)
+        grille[10][9].vit(); 
+        grille[10][10].vit(); 
+        grille[10][11].vit();
+        notifieObservateurs();
+    }
+
+    // LE VAISSEAU SPATIAL LÉGER (LWSS) : Se déplace horizontalement très vite
+    public void chargerVaisseauLeger() {
+        viderGrille();
+        grille[1][10].vit(); grille[4][10].vit();
+        grille[0][11].vit();
+        grille[0][12].vit(); grille[4][12].vit();
+        grille[0][13].vit(); grille[1][13].vit(); grille[2][13].vit(); grille[3][13].vit();
+        notifieObservateurs();
+    }
+
+    // LE CANON À PLANEURS DE GOSPER (Gosper Glider Gun)
+    // La structure la plus célèbre : elle tire un planeur toutes les 30 générations !
+    public void chargerCanonAPlaneurs() {
+        viderGrille();
         
-        // On dessine le planeur en haut à gauche
-        grille[1][0].vit();
-        grille[2][1].vit();
-        grille[0][2].vit();
-        grille[1][2].vit();
-        grille[2][2].vit();
-        
+        // Liste des coordonnées (x, y) exactes du canon
+        int[][] canon = {
+            {24, 1}, {22, 2}, {24, 2}, {12, 3}, {13, 3}, {20, 3}, {21, 3}, {34, 3}, {35, 3},
+            {11, 4}, {15, 4}, {20, 4}, {21, 4}, {34, 4}, {35, 4}, {0, 5}, {1, 5}, {10, 5},
+            {16, 5}, {20, 5}, {21, 5}, {0, 6}, {1, 6}, {10, 6}, {14, 6}, {16, 6}, {17, 6},
+            {22, 6}, {24, 6}, {10, 7}, {16, 7}, {24, 7}, {11, 8}, {15, 8}, {12, 9}, {13, 9}
+        };
+
+        // On parcourt la liste et on donne vie aux cellules
+        for(int[] coord : canon) {
+            // Sécurité : on vérifie que la grille est assez grande pour contenir le canon
+            if(coord[0] < xMax && coord[1] < yMax) {
+                grille[coord[0]][coord[1]].vit();
+            }
+        }
         notifieObservateurs();
     }
 
