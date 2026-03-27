@@ -111,7 +111,7 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         
         sliderVitesse.addChangeListener(e -> {
             int vitesseVisuelle = sliderVitesse.getValue();
-            timer.setDelay(1050 - vitesseVisuelle);
+            timer.setDelay(vitesseVisuelle);
             // Si tu as ajouté le HUD, n'oublie pas d'appeler actualise(); ici
         });
         ligne2.add(sliderVitesse);
