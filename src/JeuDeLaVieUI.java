@@ -1,29 +1,32 @@
 import javax.swing.*;
 import java.awt.*;
 
-// La classe implémente Observateur pour être notifiée des changements
 public class JeuDeLaVieUI extends JFrame implements Observateur {
     
     private JeuDeLaVie jeu;
-    private int tailleCellule = 10;
+    private int tailleCellule = 7;
+    private ZoneGrille zoneGrille; // NOUVEAU : Un panneau dédié uniquement au dessin
 
     public JeuDeLaVieUI(JeuDeLaVie jeu) {
         this.jeu = jeu;
         this.setTitle("Jeu de la Vie");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        // 1. On sépare la fenêtre en zones pour pouvoir placer les boutons en bas
         this.setLayout(new BorderLayout());
 
-        // 2. Le Timer pour l'animation (On le crée ici, au départ il est arrêté)
-        Timer timer = new Timer(500, e -> {
-            jeu.calculerGenerationSuivante();
-        });
+        // 1. LA ZONE DE DESSIN (Au centre)
+        zoneGrille = new ZoneGrille();
+        this.add(zoneGrille, BorderLayout.CENTER);
 
-        // 3. On crée un panneau de contrôle pour le bas
-        JPanel panneauControle = new JPanel();
+        // 2. LE TIMER
+        Timer timer = new Timer(500, e -> jeu.calculerGenerationSuivante());
 
-        // --- BOUTON PLAY/PAUSE ---
+        // 3. LE PANNEAU DE CONTRÔLE (En bas)
+        // On utilise un GridLayout(2, 1) pour forcer le panneau à avoir 2 lignes !
+        JPanel panneauControle = new JPanel(new GridLayout(2, 1));
+        
+        // --- LIGNE 1 : Les boutons d'action ---
+        JPanel ligne1 = new JPanel();
+        
         JButton btnPlayPause = new JButton("Commencer");
         btnPlayPause.addActionListener(e -> {
             if (timer.isRunning()) {
@@ -34,163 +37,111 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
                 btnPlayPause.setText("Pause");
             }
         });
-        panneauControle.add(btnPlayPause);
+        ligne1.add(btnPlayPause);
 
-        // --- BOUTON SUIVANT ---
         JButton btnSuivant = new JButton("Suivant");
         btnSuivant.addActionListener(e -> jeu.calculerGenerationSuivante());
-        panneauControle.add(btnSuivant);
+        ligne1.add(btnSuivant);
 
-        // --- BOUTON Reintialisation ---
-        JButton btnReinit = new JButton("Réinitaliser");
-        btnReinit.addActionListener(e -> jeu.reinitialiserGrille(0.5));
-        panneauControle.add(btnReinit);
-
-        // --- BOUTON Zoom ---
-        JButton btnZoomPlus = new JButton("Zoom +");
-        btnZoomPlus.addActionListener(e -> {
-            tailleCellule += 2; // Augmente la taille de 2 pixels
-            actualise(); // Redessine
-        });
+        JButton btnReset = new JButton("Réinitialiser");
+        btnReset.addActionListener(e -> jeu.reinitialiserGrille(0.3)); // Par exemple 30%
+        ligne1.add(btnReset);
 
         JButton btnZoomMoins = new JButton("Zoom -");
-        btnZoomMoins.addActionListener(e -> {
-            if (tailleCellule > 2) { // Empêche d'avoir une taille négative ou nulle
-                tailleCellule -= 2;
-                actualise();
-            }
-        });
-        
-        panneauControle.add(btnZoomMoins);
-        panneauControle.add(btnZoomPlus);
+        btnZoomMoins.addActionListener(e -> { if (tailleCellule > 2) { tailleCellule -= 2; actualise(); }});
+        ligne1.add(btnZoomMoins);
 
-        // --- config de départ ---
+        JButton btnZoomPlus = new JButton("Zoom +");
+        btnZoomPlus.addActionListener(e -> { tailleCellule += 2; actualise(); });
+        ligne1.add(btnZoomPlus);
+
         JButton btnPlaneur = new JButton("Générer Planeur");
-        btnPlaneur.addActionListener(e -> jeu.chargerPlaneur());
-        panneauControle.add(btnPlaneur);
+        btnPlaneur.addActionListener(e -> jeu.chargerPlaneur()); // Décommente si tu as la méthode
+        ligne1.add(btnPlaneur);
 
-        // --- taille de grille ---
-        JButton btnTaille = new JButton("Grille 100x100");
-        btnTaille.addActionListener(e -> {
-            jeu.redimensionner(100, 100);
-            
-            // Il faut recalculer la taille de la fenêtre !
-            Insets insets = getInsets();
-            int larg = (jeu.getXMax() * tailleCellule) + insets.left + insets.right;
-            int haut = (jeu.getYMax() * tailleCellule) + insets.top + insets.bottom + 60; 
-            setSize(larg, haut);
-            
-            actualise();
-        });
-        panneauControle.add(btnTaille);
+        // --- LIGNE 2 : Les réglages (Vitesse, Densité, Règles) ---
+        JPanel ligne2 = new JPanel();
 
-        // --- SLIDER DE VITESSE ---
         JSlider sliderVitesse = new JSlider(50, 1000, 500);
         sliderVitesse.addChangeListener(e -> timer.setDelay(sliderVitesse.getValue()));
-        panneauControle.add(new JLabel("Vitesse:"));
-        panneauControle.add(sliderVitesse);
+        ligne2.add(new JLabel("Vitesse:"));
+        ligne2.add(sliderVitesse);
 
-        // --- CONTRÔLE DE DENSITÉ ---
-        // Curseur de 0 à 100, départ à 50
-        JSlider sliderDensite = new JSlider(0, 100, 50); 
-        
-        JButton btnReset = new JButton("Reset Aléatoire");
-        btnReset.addActionListener(e -> {
-            // On divise par 100 pour transformer "50" en "0.5"
-            double densite = sliderDensite.getValue() / 100.0; 
-            jeu.reinitialiserGrille(densite);
-        });
+        JSlider sliderDensite = new JSlider(0, 100, 30);
+        JButton btnResetDensite = new JButton("Reset Aléatoire");
+        btnResetDensite.addActionListener(e -> jeu.reinitialiserGrille(sliderDensite.getValue() / 100.0));
+        ligne2.add(new JLabel("Densité:"));
+        ligne2.add(sliderDensite);
+        ligne2.add(btnResetDensite);
 
-        panneauControle.add(new JLabel("Densité:"));
-        panneauControle.add(sliderDensite);
-        panneauControle.add(btnReset);
-
-        // --- COMBOBOX RÈGLES ---
         String[] regles = {"Classique (Conway)", "HighLife", "Day & Night"};
         JComboBox<String> comboRegles = new JComboBox<>(regles);
         comboRegles.addActionListener(e -> {
             int choix = comboRegles.getSelectedIndex();
-            
-            if (choix == 0) {
-                // Règle 0 : Le classique de John Conway
-                jeu.setVisiteur(new VisiteurClassique(jeu));
-                
-            } else if (choix == 1) {
-                // Règle 1 : HighLife
-                jeu.setVisiteur(new VisiteurHighLife(jeu)); // (Si tu l'as créé !)
-                
-            } else if (choix == 2) {
-                // Règle 2 : Day & Night
-                jeu.setVisiteur(new VisiteurDayNight(jeu));
-            }
+            if (choix == 0) jeu.setVisiteur(new VisiteurClassique(jeu));
+            else if (choix == 1) jeu.setVisiteur(new VisiteurHighLife(jeu)); // Décommente si tu l'as
+            else if (choix == 2) jeu.setVisiteur(new VisiteurDayNight(jeu)); // Décommente si tu l'as
         });
-        panneauControle.add(comboRegles);
+        ligne2.add(comboRegles);
 
-        // 4. On ajoute le panneau de contrôle en bas de la fenêtre
+        // On assemble les lignes dans le panneau de contrôle principal
+        panneauControle.add(ligne1);
+        panneauControle.add(ligne2);
+        
+        // On ajoute tout ça en bas de la fenêtre
         this.add(panneauControle, BorderLayout.SOUTH);
 
-        // 5. Calcul de la taille de la fenêtre
-        this.setVisible(true); 
-        Insets insets = this.getInsets();
-        int largeurTotale = (jeu.getXMax() * tailleCellule) + insets.left + insets.right;
-        
-        // ATTENTION : On ajoute ~40 pixels en plus en hauteur pour avoir la place d'afficher le panneau de contrôle !
-        int hauteurTotale = (jeu.getYMax() * tailleCellule) + insets.top + insets.bottom + 40; 
-        
-        this.setSize(largeurTotale, hauteurTotale);
+        // 4. TAILLE DE LA FENÊTRE
+        this.pack(); // Demande à Swing de calculer la meilleure taille possible
+        // On fixe une taille minimum pour éviter d'écraser l'interface
+        this.setMinimumSize(new Dimension(800, 600)); 
         this.setLocationRelativeTo(null);
+        this.setVisible(true);
     }
 
     @Override
     public void actualise() {
-        // Quand le jeu notifie un changement, on demande à redessiner la fenêtre
-        this.repaint();
+        zoneGrille.repaint(); // On redessine uniquement la zone de la grille
     }
 
-   @Override
-    public void paint(Graphics g) {
-        // DOUBLE BUFFERING : On crée une image "invisible" de la taille de la fenêtre
-        Image imageCachee = createImage(getWidth(), getHeight());
+    // =========================================================
+    // NOUVEAU : Une classe interne dédiée au dessin de la grille
+    // =========================================================
+    private class ZoneGrille extends JPanel {
         
-        // au tout premier lancement, l'image peut ne pas être prête
-        if (imageCachee == null) {
-            super.paint(g);
-            return;
-        }
-        
-        // On récupère le "pinceau" de cette image invisible
-        Graphics pinceauCache = imageCachee.getGraphics();
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g); // Nettoie le fond proprement
+            
+            // Calcul mathématique pour CENTRER la grille dans l'espace vide
+            int largeurGrille = jeu.getXMax() * tailleCellule;
+            int hauteurGrille = jeu.getYMax() * tailleCellule;
+            int offsetX = (this.getWidth() - largeurGrille) / 2;
+            int offsetY = (this.getHeight() - hauteurGrille) / 2;
+            
+            // Si la grille est plus grande que l'écran (zoom), on bloque le décalage à 0
+            offsetX = Math.max(0, offsetX);
+            offsetY = Math.max(0, offsetY);
 
-        // On dessine TOUT avec ce pinceau caché (le fond de la fenêtre)
-        super.paint(pinceauCache);
-        
-        Insets insets = this.getInsets();
-        int offsetX = insets.left;
-        int offsetY = insets.top;
-
-        for (int x = 0; x < jeu.getXMax(); x++) {
-            for (int y = 0; y < jeu.getYMax(); y++) {
-                
-                Cellule c = jeu.getGrilleXY(x, y);
-                
-                if (c != null && c.estVivante()) {
-                    pinceauCache.setColor(Color.BLACK);
-                } else {
-                    pinceauCache.setColor(Color.WHITE);
+            // Double buffering implicite de Swing géré ici !
+            for (int x = 0; x < jeu.getXMax(); x++) {
+                for (int y = 0; y < jeu.getYMax(); y++) {
+                    Cellule c = jeu.getGrilleXY(x, y);
+                    
+                    if (c != null && c.estVivante()) {
+                        g.setColor(Color.BLACK);
+                    } else {
+                        g.setColor(Color.WHITE);
+                    }
+                    
+                    int posX = offsetX + (x * tailleCellule);
+                    int posY = offsetY + (y * tailleCellule);
+                    
+                    g.fillRect(posX, posY, tailleCellule, tailleCellule);
+                    g.setColor(Color.LIGHT_GRAY);
+                    g.drawRect(posX, posY, tailleCellule, tailleCellule);
                 }
-                
-                int positionX = offsetX + (x * tailleCellule);
-                int positionY = offsetY + (y * tailleCellule);
-                
-                // On colorie sur la toile cachée
-                pinceauCache.fillRect(positionX, positionY, tailleCellule, tailleCellule);
-                
-                pinceauCache.setColor(Color.LIGHT_GRAY);
-                pinceauCache.drawRect(positionX, positionY, tailleCellule, tailleCellule);
             }
         }
-        
-        // On affiche l'image terminée sur l'écran en un seul bloc !
-        g.drawImage(imageCachee, 0, 0, this);
     }
 }
