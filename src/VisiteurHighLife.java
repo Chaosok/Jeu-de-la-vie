@@ -1,3 +1,8 @@
+/**
+ * Implémente les règles de la variante "HighLife" (B36/S23).
+ * Identique aux règles classiques de Conway, mais avec une règle de 
+ * naissance supplémentaire à 6 voisines, favorisant l'apparition de réplicateurs.
+ */
 public class VisiteurHighLife extends Visiteur {
 
     public VisiteurHighLife(JeuDeLaVie jeu) { super(jeu); }

@@ -1,3 +1,8 @@
+/**
+ * Implémente les règles classiques du Jeu de la Vie de John Conway (B3/S23).
+ * - Naissance : exactement 3 voisines.
+ * - Survie : 2 ou 3 voisines (meurt d'isolement ou de surpopulation sinon).
+ */
 public class VisiteurClassique extends Visiteur {
 
     public VisiteurClassique(JeuDeLaVie jeu) {

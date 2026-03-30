@@ -1,42 +1,66 @@
+/**
+ * Représente une cellule individuelle sur la grille du Jeu de la Vie.
+ * Son comportement (vivre/mourir) est délégué à son état courant (Pattern État).
+ */
 public class Cellule {
     // La cellule mémorise son état actuel
     private CelluleEtat etat;
     private int x;
     private int y;
 
-    // Constructeur : on définit l'état de départ
+    /**
+     * Construit une nouvelle cellule avec des coordonnées et un état initial.
+     * @param x La coordonnée horizontale.
+     * @param y La coordonnée verticale.
+     * @param etatInitial L'état de départ (vivant ou mort).
+     */
     public Cellule(int x, int y, CelluleEtat etatInitial) {
         this.etat = etatInitial;
         this.x = x;
         this.y = y;
     }
 
-    // Permet aux états de modifier l'état de la cellule
+    /**
+     * Modifie l'état actuel de la cellule.
+     * @param etat Le nouvel état à appliquer.
+     */
     public void setEtat(CelluleEtat etat) {
         this.etat = etat;
     }
 
-    // --- Délégation des actions à l'état courant ---
-
+    /** Demande à l'état courant de faire vivre la cellule. */
     public void vit() {
         // La cellule demande à son état de gérer l'action "vit"
         etat.vit(this);
     }
 
+    /** Demande à l'état courant de faire mourir la cellule. */
     public void meurt() {
         // La cellule demande à son état de gérer l'action "meurt"
         etat.meurt(this);
     }
 
+    /**
+     * Vérifie si la cellule est actuellement vivante.
+     * @return true si la cellule est vivante, false sinon.
+     */
     public boolean estVivante() {
         return etat.estVivante();
     }
 
+    /**
+     * Accepte un visiteur contenant les règles du jeu.
+     * @param v Le visiteur (les règles) à appliquer.
+     */
     public void accepte(Visiteur v) {
         etat.accepte(v, this);
     }
 
-    // methode pour compter les voisins
+    /**
+     * Calcule le nombre de cellules voisines actuellement vivantes.
+     * @param jeu L'instance principale du jeu contenant la grille.
+     * @return Le nombre de voisines vivantes (entre 0 et 8).
+     */
     public int nombreVoisinesVivantes(JeuDeLaVie jeu) {
         int nbVoisines = 0;
         
