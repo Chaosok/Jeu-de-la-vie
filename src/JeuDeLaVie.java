@@ -192,7 +192,7 @@ public class JeuDeLaVie extends Observable{
     }
 
     public static void main(String[] args) {
-        // On instancie un JeuDeLaVie
+        
         JeuDeLaVie jeu = new JeuDeLaVie(70, 70);
         
         // On instancie l'interface graphique
