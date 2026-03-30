@@ -99,13 +99,13 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         });
         ligne1.add(comboStructures);
 
-        JButton btnZoomMoins = new JButton("🔍 -");
+        JButton btnZoomMoins = new JButton("Zoom-");
         btnZoomMoins.addActionListener(e -> {
             if (tailleCellule > 2) { tailleCellule -= 2; majPreferredSize(); }
         });
         ligne1.add(btnZoomMoins);
 
-        JButton btnZoomPlus = new JButton("🔍 +");
+        JButton btnZoomPlus = new JButton("Zoom+");
         btnZoomPlus.addActionListener(e -> { tailleCellule += 2; majPreferredSize(); });
         ligne1.add(btnZoomPlus);
 
@@ -117,11 +117,11 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
 
         //JPanel ligne2 = new JPanel();
         JPanel ligne2 = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 2));
-        ligne2.add(new JLabel("Vitesse :"));
+        ligne2.add(new JLabel("Vitesse (ms):"));
 
         JSlider sliderVitesse = new JSlider(50, 1000, 500);
         
-        // --- NOUVEAU : Affichage des graduations ---
+        // --- Affichage des graduations ---
         sliderVitesse.setMajorTickSpacing(150); // Affiche un nombre tous les 250
         sliderVitesse.setPaintTicks(true);      // Active les petits traits
         sliderVitesse.setPaintLabels(true);     // Active les nombres
@@ -129,14 +129,14 @@ public class JeuDeLaVieUI extends JFrame implements Observateur {
         sliderVitesse.addChangeListener(e -> {
             int vitesseVisuelle = sliderVitesse.getValue();
             timer.setDelay(vitesseVisuelle);
-            // Si tu as ajouté le HUD, n'oublie pas d'appeler actualise(); ici
+            actualise();
         });
         ligne2.add(sliderVitesse);
 
-        ligne2.add(new JLabel("Densité :"));
+        ligne2.add(new JLabel("Densité (%):"));
         JSlider sliderDensite = new JSlider(0, 100, 30);
         
-        // --- NOUVEAU : Affichage des graduations ---
+        // --- Affichage des graduations ---
         sliderDensite.setMajorTickSpacing(25); // Nombres : 0, 25, 50, 75, 100
         sliderDensite.setMinorTickSpacing(5);  // Petits traits intermédiaires
         sliderDensite.setPaintTicks(true);     
